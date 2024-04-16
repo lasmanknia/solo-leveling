@@ -1,0 +1,9 @@
+{
+  "name": "Solo Leveling",
+  "short_name": "Solo Leveling",  
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/solo-leveling/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
