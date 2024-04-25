@@ -27,13 +27,15 @@
     <h1>Solo Leveling</h1>
     <div id="timer-circle">
         <div id="timer-text">
+            <p id="submission-count">0</p>
+            <div>
             <span id="time"></span><br>
             <span id="percentage"></span><br>
-            <span id="tab-hold-text">Tab hold Submit</span>
+           </div>
         </div>
     </div>
     
-      
+
     
     <div class="container">
         <h3>Daily Levels</h3>
@@ -117,24 +119,23 @@
         let totalValue = 0;
         const sliders = document.querySelectorAll('.slider');
         sliders.forEach(slider => {
-            if (parseInt(slider.value) > 0) {
-                totalMax += parseInt(slider.max);
-                totalValue += parseInt(slider.value);
-            }
-        });
-        const completionPercentage = totalMax !== 0 ? ((totalValue / totalMax) * 100).toFixed(2) : 0;
+            totalMax += parseInt(slider.max);
+            totalValue += parseInt(slider.value);
+        });        
+        const completionPercentage = (totalMax !== 0 && totalValue !== 0) ? ((totalValue / totalMax) * 100).toFixed(2) : 0;
     
         updateTimerCircle(hours, minutes, seconds, completionPercentage);
     
         if (timeRemaining <= 0) {
             timerTextElement.textContent = "Next Day!";
-            levelComplete();
+            levelComplete(); // Call the levelComplete function when timer finishes
             resetSetRanges();
             resetLevelValues(); // Call the function to reset level values
         }
     
         requestAnimationFrame(updateTimer);
     }
+
     
     function resetLevelValues() {
         const sliders = document.querySelectorAll('.slider');
@@ -157,7 +158,7 @@
         slider.classList.add("slider");
         const input = document.createElement("span");
         input.classList.add("value");
-        input.textContent = `0/${slider.max} ${rangeType}`;
+        input.textContent = `0/${maxRange} ${rangeType}`;
         const levelNameElement = document.createElement("p");
         levelNameElement.textContent = levelName;
         levelNameElement.contentEditable = false;
@@ -169,7 +170,7 @@
     
         levelNameElement.addEventListener("input", saveValues);
         slider.addEventListener("input", () => {
-            input.textContent = `${slider.value}/${slider.max} ${rangeType}`;
+            input.textContent = `${slider.value}/${maxRange} ${rangeType}`;
             saveValues();
         });
     
@@ -178,6 +179,7 @@
         const lastLevelName = inputGroup.querySelector('.level-name');
         if (lastLevelName) lastLevelName.dispatchEvent(new Event('input'));
     }
+    
     
     function saveValues() {
         const sliders = document.querySelectorAll('.slider');
@@ -280,15 +282,23 @@ localStorage.setItem('completionData', JSON.stringify(completionData));
         const levelName = levelNameInput.value.trim();
         const maxRange = parseInt(maxRangeInput.value.trim());
         const rangeType = rangeTypeSelect.value === 'custom' ? customRangeInput.value.trim() : rangeTypeSelect.value;
-    
-        if (!levelName || isNaN(maxRange) || maxRange <= 0 || (rangeTypeSelect.value === 'custom' && !rangeType)) {
+
+        if (!levelName || isNaN(maxRange) || maxRange <= 0) {
             return alert("Please enter valid data.");
         }
-    
+
         addLevel(levelName, maxRange, rangeType);
         [levelNameInput.value, maxRangeInput.value, rangeTypeSelect.value, customRangeInput.value] = ['', '', 'km', ''];
         customRangeInput.style.display = "none";
         popupContainer.style.display = "none";
+    });
+
+    rangeTypeSelect.addEventListener("change", () => {
+        if (rangeTypeSelect.value === 'custom') {
+            customRangeInput.style.display = "block";
+        } else {
+            customRangeInput.style.display = customRangeInput.value.trim() !== '' ? "block" : "none";
+        }
     });
     
     toggleEditDeleteButton.addEventListener("click", () => {
@@ -317,20 +327,42 @@ localStorage.setItem('completionData', JSON.stringify(completionData));
         });
     });
     
+
     const timerCircle = document.getElementById("timer-circle");
+    const tabHoldText = document.getElementById("tab-hold-text");
+    const submissionCountText = document.getElementById("submission-count");
+    
     let holdTimer;
+    let submissionCount = 0;
+    
+    // Load submission count from localStorage if available
+    if (localStorage.getItem("submissionCount")) {
+        submissionCount = parseInt(localStorage.getItem("submissionCount"));
+        submissionCountText.textContent = `${submissionCount}`;
+    }
     
     timerCircle.addEventListener("touchstart", () => {
         timerCircle.classList.add("bright");
         holdTimer = setTimeout(() => {
             levelComplete();
-        }, 1300); // 2 seconds
+            updateSubmissionCount(); // Update submission count
+        }, 1300); // 1.3 seconds
     });
     
     timerCircle.addEventListener("touchend", () => {
         clearTimeout(holdTimer);
         timerCircle.classList.remove("bright");
     });
+    
+    function updateSubmissionCount() {
+        submissionCount++;
+        submissionCountText.textContent = `${submissionCount}`;
+        
+        // Save submission count to localStorage
+        localStorage.setItem("submissionCount", submissionCount);
+    }
+    
+
     
     rangeTypeSelect.addEventListener("change", () => customRangeInput.style.display = rangeTypeSelect.value === 'custom' ? "block" : "none");
     
@@ -344,6 +376,27 @@ localStorage.setItem('completionData', JSON.stringify(completionData));
     document.addEventListener('selectstart', function (e) {
         e.preventDefault();
     });
+    
+
+
+
+    let clearStorageTimer;
+
+    function clearLocalStorageOnTouchHold() {
+        clearStorageTimer = setTimeout(() => {
+            localStorage.clear();
+            alert("Reset successfully!");
+            window.location.reload(); // Reload the page after clearing localStorage
+        }, 10000); // 10 seconds
+    }
+    
+    function cancelClearLocalStorage() {
+        clearTimeout(clearStorageTimer);
+    }
+    
+    // Add event listeners for touchstart and touchend events to detect touch and hold
+    document.addEventListener("touchstart", clearLocalStorageOnTouchHold);
+    document.addEventListener("touchend", cancelClearLocalStorage);
     
     
 </script>
