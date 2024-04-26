@@ -1,5 +1,5 @@
 :root {
-    --main-color: hsl(120, 92%, 36%); /* Define your main color here */
+    --main-color: hsl(154, 84%, 47%); /* Define your main color here */
     --bg-color: #141E46;
   }
 /* General styles */
@@ -178,7 +178,7 @@ h1 {
     font-size: 20px;
 }
 #timer-circle.bright {
-    filter: brightness(200%);
+    filter: brightness(120%);
     transition: 2s;
 }
 

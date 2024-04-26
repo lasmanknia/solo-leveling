@@ -380,25 +380,25 @@ localStorage.setItem('completionData', JSON.stringify(completionData));
 
 
 
-    let clearStorageTimer;
 
-    function clearLocalStorageOnTouchHold() {
-        clearStorageTimer = setTimeout(() => {
-            localStorage.clear();
-            alert("Reset successfully!");
-            window.location.reload(); // Reload the page after clearing localStorage
-        }, 10000); // 10 seconds
-    }
-    
-    function cancelClearLocalStorage() {
-        clearTimeout(clearStorageTimer);
-    }
-    
-    // Add event listeners for touchstart and touchend events to detect touch and hold
-    document.addEventListener("touchstart", clearLocalStorageOnTouchHold);
-    document.addEventListener("touchend", cancelClearLocalStorage);
-    
-    
+    let touchStartTime;
+
+    timerCircle.addEventListener("touchstart", (event) => {
+        touchStartTime = new Date().getTime();
+        setTimeout(() => {
+            const currentTime = new Date().getTime();
+            if (currentTime - touchStartTime >= 10000) {
+                localStorage.clear();
+                window.location.reload(); // Reload the window
+            }
+        }, 10000);
+    });
+
+    timerCircle.addEventListener("touchend", () => {
+        clearTimeout();
+    });
+
+
 </script>
 </body>
 </html>
